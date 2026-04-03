@@ -42,20 +42,24 @@ static void drawCloud(float x, float y, float z, float s) {
 static void drawSkyAndClouds(void) {
     glDisable(GL_LIGHTING);
 
-    glBegin(GL_QUADS);
-    glColor3f(0.12f, 0.24f, 0.52f);
-    glVertex3f(-80.0f, 35.0f, -80.0f);
-    glVertex3f(80.0f, 35.0f, -80.0f);
-    glColor3f(1.0f, 0.56f, 0.24f);
-    glVertex3f(80.0f, 3.0f, -80.0f);
-    glVertex3f(-80.0f, 3.0f, -80.0f);
-    glEnd();
+    // glBegin(GL_QUADS);
+    // glColor3f(0.12f, 0.24f, 0.52f);
+    // glVertex3f(-100.0f, 35.0f, -100.0f);
+    // glVertex3f(100.0f, 35.0f, -100.0f);
+    // glColor3f(1.0f, 0.56f, 0.24f);
+    // glVertex3f(100.0f, 3.0f, -100.0f);
+    // glVertex3f(-100.0f, 3.0f, -100.0f);
+    // glEnd();
 
     glColor3f(1.0f, 0.93f, 0.85f);
     drawCloud(-18.0f, 14.0f, -35.0f, 1.7f);
     drawCloud(-5.0f, 12.2f, -31.0f, 1.2f);
     drawCloud(14.0f, 15.0f, -37.0f, 1.5f);
     drawCloud(24.0f, 13.0f, -39.0f, 1.1f);
+    drawCloud(-57.0f, 15.0f, -57.0f, 1.5f);
+    drawCloud(-38.0f, 13.0f, -14.0f, 1.1f);
+    drawCloud(57.0f, 15.0f, -57.0f, 1.5f);
+    drawCloud(38.0f, 13.0f, -14.0f, 1.1f);
 
     glEnable(GL_LIGHTING);
 }
@@ -107,30 +111,6 @@ static void drawRoundedCanopy(float radius, int slices, float flattenY) {
         }
         glEnd();
     }
-}
-
-static void drawPalmTree(float x, float z, float h) {
-    int i;
-    glPushMatrix();
-    glTranslatef(x, -2.0f, z);
-
-    setColor3(0.48f, 0.30f, 0.17f);
-    glPushMatrix();
-    glTranslatef(0.0f, h * 0.5f, 0.0f);
-    drawUnitBox(0.35f, h, 0.35f);
-    glPopMatrix();
-
-    setColor3(0.2f, 0.46f, 0.22f);
-    glTranslatef(0.0f, h, 0.0f);
-    for (i = 0; i < 7; ++i) {
-        glPushMatrix();
-        glRotatef(i * 51.0f, 0.0f, 1.0f, 0.0f);
-        glTranslatef(1.0f, 0.0f, 0.0f);
-        drawUnitBox(2.2f, 0.08f, 0.32f);
-        glPopMatrix();
-    }
-
-    glPopMatrix();
 }
 
 static void drawMangoTree(float x, float z, float h) {
@@ -232,8 +212,8 @@ static void drawBuilding(void) {
 
     setColor3(0.27f, 0.41f, 0.58f);
     drawWindowGrid(-7.0f, -0.2f, -0.42f, 13, 5);
-    drawWindowGrid(-12.0f, -0.4f, -0.9f, 3, 5);
-    drawWindowGrid(8.5f, -0.4f, -0.9f, 3, 5);
+    drawWindowGrid(-12.0f, -0.4f, -0.9f, 3, 4);
+    drawWindowGrid(8.5f, -0.4f, -0.9f, 3, 4);
 
     setColor3(0.78f, 0.62f, 0.42f);
     glPushMatrix();
@@ -258,9 +238,9 @@ static void drawLogo(void) {
 
     glColor3f(0.96f, 0.43f, 0.14f);
     glBegin(GL_TRIANGLES);
-    glVertex3f(-0.2f, -0.15f, 0.0f);
-    glVertex3f(0.45f, 0.0f, 0.0f);
-    glVertex3f(-0.2f, 0.15f, 0.0f);
+    glVertex3f(-0.1f, -0.15f, 0.0f);
+    glVertex3f(0.40f, 0.20f, 0.0f);
+    glVertex3f(-0.4f, 0.15f, 0.0f);
     glEnd();
 
     glEnable(GL_LIGHTING);
@@ -290,13 +270,6 @@ static void drawNameboard(void) {
     glTranslatef(-6.2f, 0.36f, 0.43f);
     drawStrokeText("HEADQUARTERS, BENGALURU", 0.00195f);
     glPopMatrix();
-
-    /* Classic GLUT stroke fonts cannot render Kannada glyphs directly. */
-    glPushMatrix();
-    glTranslatef(-6.8f, 0.02f, 0.43f);
-    drawStrokeText("BHARATIYA BAHYAKASHA SAMSHODHANA SAMSTHE (ISRO), KENDRA KACHERI, BENGALURU", 0.00108f);
-    glPopMatrix();
-    glEnable(GL_LIGHTING);
 
     glPushMatrix();
     glTranslatef(6.4f, 0.42f, 0.48f);
@@ -493,12 +466,12 @@ static void display(void) {
     drawRocket();
 
     drawMangoTree(14.5f, 4.0f, 4.4f);
-    drawPalmTree(-17.5f, 8.2f, 4.4f);
-    drawPalmTree(-20.2f, 2.2f, 3.8f);
-    drawPalmTree(18.4f, 8.0f, 4.2f);
-    drawPalmTree(21.0f, 2.6f, 3.7f);
-    drawPalmTree(-14.2f, -1.5f, 3.2f);
-    drawPalmTree(15.2f, -1.8f, 3.1f);
+    drawMangoTree(-17.5f, 8.2f, 4.4f);
+    drawMangoTree(-20.2f, 2.2f, 3.8f);
+    drawMangoTree(18.4f, 8.0f, 4.2f);
+    drawMangoTree(21.0f, 2.6f, 3.7f);
+    drawMangoTree(-14.2f, -1.5f, 3.2f);
+    drawMangoTree(15.2f, -1.8f, 3.1f);
 
     drawFlowerBed(-9.8f, 6.3f, 7.2f, 0.7f);
     drawFlowerBed(9.8f, 6.1f, 7.0f, 0.8f);
