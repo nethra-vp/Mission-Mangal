@@ -50,7 +50,9 @@
 #include "scene_3_timer.h"
 #include "scene_3_shoreline.h"
 #include "scene_4_timer.h"
-/* TODO: #include etc for scenes 4-16 */
+#include "scene_6_rocket_launch.h"
+#include "scene_7_crash_server.h"
+/* TODO: #include etc for scenes 8-16 */
 
 /* ===== GLOBAL ANIMATION CONTROL ===== */
 static float g_masterTime = 0.0f;       /* Total elapsed time across all scenes */
@@ -66,22 +68,22 @@ static const struct {
     float duration;
     const char *name;
 } g_sceneConfig[] = {
-    {1,  8.0f, "ISRO Building Zoom"},
+    {1,  16.0f, "ISRO Building Zoom"},
     {2,  5.0f, "Server Room"},
     {3,  5.0f, "Scientists Close-Up"},
     {4,  5.0f, "Rocket at Shoreline"},
     {5,  12.0f, "Timer Countdown"},
-    {6,  8.0f, "Rocket Launch"},
-    {7,  8.0f, "Rocket Crash"},
-    {8,  5.0f, "Server Room Tension"},
-    {9,  5.0f, "Conference Room"},
-    {10, 8.0f, "Ideating Orbit"},
-    {11, 8.0f, "Team Formation"},
-    {12, 5.0f, "Corridor Interaction"},
-    {13, 8.0f, "Rocket Launch II"},
-    {14, 10.0f, "Catching Orbit"},
-    {15, 5.0f, "Success"},
-    {16, 3.0f, "The End"}
+    {6,  18.0f, "Rocket Launch"},
+    {7,  12.0f, "Server Room Tension - Crash Announcement"},
+    {8,  5.0f, "Conference Room"},
+    {9,  60.0f, "Ideating Orbit"},
+    {10, 15.0f, "Team Formation"},
+    {11, 14.0f, "Corridor Interaction"},
+    {12, 10.0f, "Rocket Launch II"},
+    {13, 100.0f, "Catching Orbit"},
+    {14, 5.0f, "Success"},
+    {15, 3.0f, "The End"},
+    {16, 0.0f, ""}  /* Padding */
 };
 
 static const int NUM_SCENES = sizeof(g_sceneConfig) / sizeof(g_sceneConfig[0]);
@@ -154,9 +156,10 @@ static void updateScene(void) {
     
     /* Handle scene transition */
     if (newScene != g_currentScene) {
-        printf("[SCENE TRANSITION] %d -> %d: %s\n", 
+        printf("[SCENE TRANSITION] %d -> %d: %s (Time: %.1f sec)\n", 
                g_currentScene, newScene, 
-               newScene <= NUM_SCENES ? g_sceneConfig[newScene-1].name : "END");
+               newScene <= NUM_SCENES ? g_sceneConfig[newScene-1].name : "END",
+               g_masterTime);
         g_previousScene = g_currentScene;
         g_currentScene = newScene;
         g_sceneStartTime = g_masterTime;
@@ -286,8 +289,16 @@ static void initializeScenes(void) {
     g_sceneDisplay[5] = scene4_display;  /* From scene_4_timer.h */
     g_sceneUpdate[5] = scene4_update;
     
-    /* Scenes 6-16: Placeholder (replace with actual implementations from headers) */
-    for (int i = 6; i <= 16; i++) {
+    /* Scene 6: Rocket Launch */
+    g_sceneDisplay[6] = scene6_display;  /* From scene_6_rocket_launch.h */
+    g_sceneUpdate[6] = scene6_update;
+    
+    /* Scene 7: Server Room Tension - Crash Announcement */
+    g_sceneDisplay[7] = scene7_display;  /* From scene_7_crash_server.h */
+    g_sceneUpdate[7] = scene7_update;
+    
+    /* Scenes 8-15: Placeholder (replace with actual implementations from headers) */
+    for (int i = 8; i <= 15; i++) {
         g_sceneDisplay[i] = scene_placeholder_display;
         g_sceneUpdate[i] = scene_placeholder_update;
     }
