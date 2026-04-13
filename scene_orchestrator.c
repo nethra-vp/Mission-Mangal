@@ -3,24 +3,24 @@
  * Master Orchestrator Program
  * 
  * This program sequences all 16 scenes from the Mission Mangal story:
- * 1. ISRO Building Zoom (8 sec)
+ * 1. ISRO Building Zoom (16 sec)
  * 2. Server Room (5 sec)
  * 3. Scientists Close-Up (5 sec)
  * 4. Rocket at Shoreline (5 sec)
  * 5. Timer Countdown (12 sec)
- * 6. Rocket Launch (8 sec)
- * 7. Rocket Crash (8 sec)
- * 8. Server Room Tension (5 sec)
- * 9. Conference Room (5 sec)
- * 10. Ideating Orbit (8 sec)
- * 11. Team Formation (8 sec)
- * 12. Corridor Interaction (5 sec)
- * 13. Rocket Launch II (8 sec)
- * 14. Catching Orbit (10 sec)
+ * 6. Rocket Launch (18 sec)
+ * 7. Server Room Tension (12 sec)
+ * 8. Corridor Interaction (14 sec)
+ * 9. Scientists Close-Up Interaction (8 sec)
+ * 10. Conference Room (5 sec)
+ * 11. Ideating Orbit (60 sec)
+ * 12. Team Formation (15 sec)
+ * 13. Rocket Launch II (10 sec)
+ * 14. Catching Orbit (100 sec)
  * 15. Success (5 sec)
  * 16. The End (3 sec)
  * 
- * Total: 133 seconds (~2.2 minutes)
+ * Total: 293 seconds (~4.9 minutes)
  * 
  * Usage: Compile each original scene file separately, then link with this orchestrator
  * OR: Merge all scene code here with scene-specific function names
@@ -52,15 +52,23 @@
 #include "scene_4_timer.h"
 #include "scene_6_rocket_launch.h"
 #include "scene_7_crash_server.h"
+#include "scene_8_interaction.h"
+#include "scene_9_closeup_interaction.h"
+#include "scene_10_conference_room.h"
+#include "scene_11_poori_scene.h"
+#include "scene_12_team_formation.h"
+#include "scene_13_ideating_orbit.h"
+#include "scene_14_design_satellite.h"
 /* TODO: #include etc for scenes 8-16 */
 
 /* ===== GLOBAL ANIMATION CONTROL ===== */
 static float g_masterTime = 0.0f;       /* Total elapsed time across all scenes */
-static int g_currentScene = 0;          /* Current scene (1-16) */
+static int g_currentScene = 0;          /* Current scene (1-NUM_SCENES) */
 static float g_sceneStartTime = 0.0f;   /* When this scene started */
 static float g_sceneTime = 0.0f;        /* Time within current scene */
 static int g_previousScene = 0;         /* Previous scene for fade transitions */
 static float g_transitionDuration = 0.5f; /* Fade transition duration (seconds) */
+static int g_missionCompletePrinted = 0;
 
 /* Scene timing configuration (total duration per scene in seconds) */
 static const struct {
@@ -75,15 +83,17 @@ static const struct {
     {5,  12.0f, "Timer Countdown"},
     {6,  18.0f, "Rocket Launch"},
     {7,  12.0f, "Server Room Tension - Crash Announcement"},
-    {8,  5.0f, "Conference Room"},
-    {9,  60.0f, "Ideating Orbit"},
-    {10, 15.0f, "Team Formation"},
-    {11, 14.0f, "Corridor Interaction"},
-    {12, 10.0f, "Rocket Launch II"},
-    {13, 100.0f, "Catching Orbit"},
-    {14, 5.0f, "Success"},
-    {15, 3.0f, "The End"},
-    {16, 0.0f, ""}  /* Padding */
+    {8,  14.0f, "Corridor Interaction"},
+    {9,  8.0f, "Scientists Close-Up Interaction"},
+    {10, 5.0f, "Conference Room"},
+    {11, 60.0f, "Poori Scene"},
+    {12, 15.0f, "Team Formation"},
+    {13, 68.0f, "Ideating Orbit"},
+    {14, 20.0f, "Design Satellite"},
+    {15, 10.0f, "Rocket Launch II"},
+    {16, 100.0f, "Catching Orbit"},
+    {17, 5.0f, "Success"},
+    {18, 3.0f, "The End"}
 };
 
 static const int NUM_SCENES = sizeof(g_sceneConfig) / sizeof(g_sceneConfig[0]);
@@ -102,8 +112,8 @@ typedef void (*SceneDisplayFunc)(void);
 typedef void (*SceneUpdateFunc)(float deltaTime);
 
 /* Array of scene display functions - will be populated at initialization */
-static SceneDisplayFunc g_sceneDisplay[17] = {NULL};
-static SceneUpdateFunc g_sceneUpdate[17] = {NULL};
+static SceneDisplayFunc g_sceneDisplay[20] = {NULL};
+static SceneUpdateFunc g_sceneUpdate[20] = {NULL};
 
 /* ===== PLACEHOLDER SCENE IMPLEMENTATIONS ===== */
 /* Scene 1 is now included from scene_1_isro.h header file */
@@ -116,10 +126,12 @@ static SceneUpdateFunc g_sceneUpdate[17] = {NULL};
 
 /* Generic placeholder for any unimplemented scene */
 static void scene_placeholder_display(void) {
+    /* Avoid inheriting fog or other state from previous scenes. */
+    glDisable(GL_FOG);
+    glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
     
     glDisable(GL_LIGHTING);
     glColor3f(0.8f, 0.8f, 1.0f);
@@ -153,6 +165,12 @@ static void updateScene(void) {
         }
         timeSinceStart = nextTime;
     }
+
+    /* Past the end: switch to final end screen (scene index > NUM_SCENES) */
+    if (newScene == 0) {
+        newScene = NUM_SCENES + 1;
+        g_sceneTime = g_masterTime - timeSinceStart;
+    }
     
     /* Handle scene transition */
     if (newScene != g_currentScene) {
@@ -171,9 +189,9 @@ static void updateScene(void) {
     }
     
     /* Check if animation is complete */
-    if (g_currentScene > NUM_SCENES) {
+    if (g_currentScene > NUM_SCENES && !g_missionCompletePrinted) {
         printf("\n=== MISSION COMPLETE ===\n");
-        g_currentScene = NUM_SCENES;
+        g_missionCompletePrinted = 1;
     }
 }
 
@@ -266,6 +284,22 @@ static void keyboardCallback(unsigned char key, int x, int y) {
     } else if (key == ' ') {
         /* Pause/resume - not implemented for simplicity */
         printf("Current scene: %d/%d\n", g_currentScene, NUM_SCENES);
+    } else if (key == 'n' || key == 'N') {
+        /* Debug: jump to next scene instantly */
+        float timeSinceStart = 0.0f;
+        int nextScene = g_currentScene + 1;
+        if (nextScene < 1) {
+            nextScene = 1;
+        }
+        if (nextScene > NUM_SCENES) {
+            nextScene = NUM_SCENES;
+        }
+        for (int i = 0; i < nextScene - 1; i++) {
+            timeSinceStart += g_sceneConfig[i].duration;
+        }
+        g_masterTime = timeSinceStart + 0.001f;
+        updateScene();
+        glutPostRedisplay();
     }
 }
 
@@ -296,9 +330,37 @@ static void initializeScenes(void) {
     /* Scene 7: Server Room Tension - Crash Announcement */
     g_sceneDisplay[7] = scene7_display;  /* From scene_7_crash_server.h */
     g_sceneUpdate[7] = scene7_update;
+
+    /* Scene 8: Corridor Interaction */
+    g_sceneDisplay[8] = scene8_display;  /* From scene_8_interaction.h */
+    g_sceneUpdate[8] = scene8_update;
+
+    /* Scene 9: Scientists Close-Up Interaction */
+    g_sceneDisplay[9] = scene9_display;  /* From scene_9_closeup_interaction.h */
+    g_sceneUpdate[9] = scene9_update;
+
+    /* Scene 10: Conference Room */
+    g_sceneDisplay[10] = scene10_display;  /* From scene_10_conference_room.h */
+    g_sceneUpdate[10] = scene10_update;
+
+    /* Scene 11: Poori Scene */
+    g_sceneDisplay[11] = scene11_display;  /* From scene_11_poori_scene.h */
+    g_sceneUpdate[11] = scene11_update;
+
+    /* Scene 12: Team Formation */
+    g_sceneDisplay[12] = scene12_display;  /* From scene_12_team_formation.h */
+    g_sceneUpdate[12] = scene12_update;
+
+    /* Scene 13: Ideating Orbit */
+    g_sceneDisplay[13] = scene13_display;  /* From scene_13_ideating_orbit.h */
+    g_sceneUpdate[13] = scene13_update;
+
+    /* Scene 14: Design Satellite */
+    g_sceneDisplay[14] = scene14_display;  /* From scene_14_design_satellite.h */
+    g_sceneUpdate[14] = scene14_update;
     
-    /* Scenes 8-15: Placeholder (replace with actual implementations from headers) */
-    for (int i = 8; i <= 15; i++) {
+    /* Scenes 15-18: Placeholder (replace with actual implementations from headers) */
+    for (int i = 15; i <= 18; i++) {
         g_sceneDisplay[i] = scene_placeholder_display;
         g_sceneUpdate[i] = scene_placeholder_update;
     }
