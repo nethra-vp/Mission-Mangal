@@ -1,4 +1,4 @@
-#include "C:/OpenGL/include/GL/glut.h"
+#include "GL/glut.h"
 #include <math.h>
 #include <stdio.h>
 
