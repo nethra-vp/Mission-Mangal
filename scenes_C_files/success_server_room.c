@@ -48,11 +48,19 @@ static void drawVideoWallMainContent(void) {
 	const int marsSegments = 96;
 	const float marsCx = -2.25f;
 	const float marsCy = 0.05f;
-	const float marsR = 2.55f;
+	const float marsR = 1.85f;
+	const float orbitRx = marsR * 1.34f;
+	const float orbitRy = marsR * 0.88f;
+	/* Increase orbitDepthContrast for a more dramatic hide-behind effect. */
+	const float orbitDepthMid = 0.06f;
+	const float orbitDepthContrast = 0.04f;
 	float t = gTime;
 	float pulse = 0.5f + 0.5f * sinf(t * 8.0f);
-	float shipX = 2.45f - 0.8f * (0.5f + 0.5f * sinf(t * 0.75f));
-	float shipY = 0.55f + 0.95f * sinf(t * 0.42f);
+	float shipA = t * 0.75f;
+	float shipX = marsCx + cosf(shipA) * orbitRx;
+	float shipY = marsCy + sinf(shipA) * orbitRy;
+	float shipZ = orbitDepthMid + orbitDepthContrast * cosf(shipA);
+	float shipTangentDeg = atan2f(cosf(shipA) * orbitRy, -sinf(shipA) * orbitRx) * 57.2957795f;
 
 	glDisable(GL_LIGHTING);
 	glEnable(GL_BLEND);
@@ -137,19 +145,20 @@ static void drawVideoWallMainContent(void) {
 	glBegin(GL_LINE_STRIP);
 	for (i = 0; i <= 120; ++i) {
 		float a = 6.2831853f * (float)i / 120.0f;
-		float ex = marsCx + cosf(a) * (marsR * 1.34f);
-		float ey = marsCy + sinf(a) * (marsR * 0.88f);
+		float ex = marsCx + cosf(a) * orbitRx;
+		float ey = marsCy + sinf(a) * orbitRy;
 		float vis = 0.25f + 0.75f * (0.5f + 0.5f * cosf(a - t * 0.45f));
+		float orbZ = orbitDepthMid + orbitDepthContrast * cosf(a);
 		glColor4f(0.16f, 0.72f + 0.25f * vis, 1.0f, 0.22f + 0.42f * vis);
-		glVertex3f(ex, ey, 0.075f);
+		glVertex3f(ex, ey, orbZ);
 	}
 	glEnd();
 	glLineWidth(1.0f);
 
 	/* Mangalyaan body entering from right side close to Martian limb. */
 	glPushMatrix();
-	glTranslatef(shipX, shipY, 0.1f);
-	glRotatef(-18.0f + 8.0f * sinf(t * 0.6f), 0.0f, 0.0f, 1.0f);
+	glTranslatef(shipX, shipY, shipZ);
+	glRotatef(shipTangentDeg, 0.0f, 0.0f, 1.0f);
 
 	/* Gold thermal blanket central bus. */
 	glBegin(GL_QUADS);
@@ -200,8 +209,12 @@ static void drawVideoWallMainContent(void) {
 	glRasterPos3f(-5.0f, 2.08f, 0.1f);
 	drawBitmapText("MARS ORBIT INSERTION - LIVE VISUAL", GLUT_BITMAP_8_BY_13);
 
+	glColor3f(1.28f, 0.78f, 0.0f);
+	glRasterPos3f(1.5f, 1.65f, 1.0f);
+	drawBitmapText("MISSION COMPLETE", GLUT_BITMAP_HELVETICA_18);
+
 	glColor3f(0.28f, 0.78f, 1.0f);
-	glRasterPos3f(2.1f, -2.08f, 0.1f);
+	glRasterPos3f(1.5f, -2.08f, 0.1f);
 	drawBitmapText("TRAJECTORY LOCK CONFIRMED", GLUT_BITMAP_HELVETICA_12);
 
 	glDisable(GL_BLEND);
